@@ -45,7 +45,7 @@ services:
     restart: unless-stopped
   #Unifi-Controller
   unifi-db:
-    image: docker.io/mongo
+    image: docker.io/mongo:latest
     container_name: unifi-db
     environment:
       - PUID=${PUID}
