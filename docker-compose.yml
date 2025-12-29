@@ -1,0 +1,59 @@
+services:
+  adguard:
+    image: adguard/adguardhome
+    container_name: adguard
+    mem_limit: 2g
+    cpu_shares: 768
+    security_opt:
+    - no-new-privileges:true
+    network_mode: host
+    volumes:
+    - /volume2/docker/adguard/config:/opt/adguardhome/conf:rw
+    - /volume2/docker/adguard/data:/opt/adguardhome/work:rw
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+    restart: on-failure:5
+  tailscale:
+    image: tailscale/tailscale
+    container_name: tailscaled
+    cap_add:
+    - NET_ADMIN
+    - NET_RAW
+    environment:
+    #      - TS_HOSTNAME=${TS_HOSTNAME} # Usually not necessary for your hostname to be the same name on the tailscale network
+    - TS_AUTHKEY=${TS_AUTHKEY} # Generate auth keys here: https://login.tailscale.com/admin/settings/keys
+    #      - TS_ROUTES=${TS_ROUTES} # Creates a subnet router for Tailscale. Use your subnet's CIDR in the form: 192.168.1.0/24
+    - TS_ACCEPT_DNS=${TS_ACCEPT_DNS}
+    - TS_SOCKET=${TS_SOCKET}
+    - TS_EXTRA_ARGS=${TS_EXTRA_ARGS}
+    - TS_STATE_DIR=${TS_STATE_DIR}
+    - TS_ACCEPT_DNS={TS_ACCEPT_DNS}
+    volumes:
+    - /volume2/docker/tailscale:/var/lib
+    - /dev/net/tun:/dev/net/tun
+    network_mode: host
+    restart: unless-stopped
+  #Unifi-Controller
+  unifi-controller:
+    image: lscr.io/linuxserver/unifi-controller:latest
+    container_name: unifi-controller
+    network_mode: host
+    environment:
+    - PUID=${PUID}
+    - PGID=${PGID}
+    - TZ=${TZ}
+    - MEM_LIMIT=1024 #optional
+    - MEM_STARTUP=1024 #optional
+    volumes:
+    - ${DOCKERCONFDIR}/unifi-controller:/config
+    ports:
+    - 8443:8443
+    - 3478:3478/udp
+    - 10001:10001/udp
+    - 8080:8080
+    - 1900:1900/udp #optional
+    - 8843:8843 #optional
+    - 8880:8880 #optional
+    - 6789:6789 #optional
+    - 5514:5514/udp #optional
+    restart: unless-stopped
